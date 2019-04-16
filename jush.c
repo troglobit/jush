@@ -79,15 +79,18 @@ static int parse(char *line, char *args[], struct env *env)
 	args[num++] = strtok(line, sep);
 	do {
 		token = strtok(NULL, sep);
+		if (token) {
+			if (token[0] == '|') {
+				args[num++] = NULL;
+				env->pipes++;
+				token++;
+				if (token[0] == 0)
+					continue;
+			}
+		}
+
 		args[num++] = token;
 	} while (token);
-
-	for (int i = 0; args[i]; i++) {
-		if (!strcmp(args[i], "|")) {
-			args[i] = NULL;
-			env->pipes++;
-		}
-	}
 
 	return args[0] == NULL;
 }
