@@ -22,32 +22,90 @@
 #include <editline.h>
 #include <sys/wait.h>
 
-static int parse(char *line, char *args[])
+struct env {
+	int pipes;
+};
+
+static void run(char *args[])
+{
+	execvp(args[0], args);
+	err(1, "Failed executing %s", args[0]);
+}
+
+static void pipeit(char *args[], struct env *env)
+{
+	int fd[2];
+
+	if (!env->pipes)
+		run(args);
+
+	if (pipe(fd))
+		err(1, "Failed creating pipe");
+
+	if (!fork()) {
+		close(STDOUT_FILENO);
+		if (dup(fd[STDOUT_FILENO]) < 0)
+			err(1, "Failed redirecting stdout");
+		close(fd[STDOUT_FILENO]);
+
+		run(args);
+	}
+
+	close(fd[STDOUT_FILENO]);
+	close(STDIN_FILENO);
+	if (dup(fd[STDIN_FILENO]) < 0)
+		err(1, "Failed redirecting stdin");
+	close(fd[STDIN_FILENO]);
+
+	wait(NULL);
+
+	env->pipes--;
+	while (*args)
+		args++;
+	args++;
+
+	pipeit(args, env);
+}
+
+static int parse(char *line, char *args[], struct env *env)
 {
 	const char *sep = " \t";
 	char *token;
-	int i = 0;
-	
+	int num = 0;
+
+	memset(env, 0, sizeof(*env));
+	args[num++] = strtok(line, sep);
 	do {
-		token = strtok(line, sep);
-		args[i++] = token;
-		line = NULL;
+		token = strtok(NULL, sep);
+		args[num++] = token;
 	} while (token);
-	
+
+	for (int i = 0; args[i]; i++) {
+		if (!strcmp(args[i], "|")) {
+			args[i] = NULL;
+			env->pipes++;
+		}
+	}
+
 	return args[0] == NULL;
 }
 
-static void run(char *line)
+static void eval(char *line)
 {
+	struct env env;
 	char *args[strlen(line)];
 
-	if (parse(line, args))
+	if (parse(line, args, &env))
 		return;
 
-	if (!fork())
-		execvp(args[0], args);
-	else
-		wait(NULL);
+	if (!fork()) {
+		if (env.pipes)
+			pipeit(args, &env);
+		else
+			run(args);
+	}
+
+	wait(NULL);
 }
 
 int main(int argc, char *argv[])
@@ -55,5 +113,7 @@ int main(int argc, char *argv[])
 	char *line;
 
 	while ((line = readline("$ ")))
-		run(line);
+		eval(line);
+
+	return 0;
 }
