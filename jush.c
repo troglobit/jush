@@ -349,6 +349,7 @@ int main(int argc, char *argv[])
 		}
 
 		eval(line, &env);
+		free(line);
 
 		reaper(&env);
 	}
