@@ -30,6 +30,11 @@
 #define HISTFILE "~/.jush_history"
 #define MAXJOBS  100
 
+/* From The Practice of Programming, by Kernighan and Pike */
+#ifndef NELEMS
+#define NELEMS(array) (sizeof(array) / sizeof(array[0]))
+#endif
+
 struct env {
 	char prevcwd[PATH_MAX];
 	int pipes;
@@ -188,28 +193,25 @@ static int parse(char *line, char *args[], struct env *env)
 	env->pipes = 0;
 	env->bg = 0;
 
-	args[num++] = strtok(line, sep);
-	do {
-		token = strtok(NULL, sep);
-		if (token) {
-			if (token[0] == '|') {
-				args[num++] = NULL;
-				env->pipes++;
-				token++;
-			}
-
-			if (token[0] == '&') {
-				args[num++] = NULL;
-				env->bg = 1;
-				token++;
-			}
-
-			if (token[0] == 0)
-				continue;
+	token = strtok(line, sep);
+	while (token) {
+		if (token[0] == '|') {
+			args[num++] = NULL;
+			env->pipes++;
+			token++;
 		}
 
-		args[num++] = token;
-	} while (token);
+		if (token[0] == '&') {
+			args[num++] = NULL;
+			env->bg = 1;
+			token++;
+		}
+
+		if (*token)
+			args[num++] = strdup(token);
+		token = strtok(NULL, sep);
+	}
+	args[num++] = token;
 
 	return args[0] == NULL;
 }
@@ -219,11 +221,12 @@ static void eval(char *line, struct env *env)
 	pid_t pid;
 	char *args[strlen(line)];
 
+	memset(args, 0, sizeof(args));
 	if (parse(line, args, env))
-		return;
+		goto cleanup;
 
 	if (builtin(args, env))
-		return;
+		goto cleanup;
 
 	pid = fork();
 	if (!pid) {
@@ -237,6 +240,12 @@ static void eval(char *line, struct env *env)
 		addjob(env, pid);
 	else
 		waitpid(pid, NULL, 0);
+
+cleanup:
+	for (size_t i = 0; i < NELEMS(args); i++) {
+		if (args[i])
+			free(args[i]);
+	}
 }
 
 static void reaper(struct env *env)
