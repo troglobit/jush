@@ -158,6 +158,10 @@ static void eval(char *line, struct env *env)
 	wait(NULL);
 }
 
+static void breakit(int signo)
+{
+}
+
 static char *prompt(char *buf, size_t len)
 {
 	size_t hlen;
@@ -207,6 +211,8 @@ int main(int argc, char *argv[])
 			return 1;
 		}
 	}
+
+	signal(SIGINT, breakit);
 
 	if (cmd) {
 		size_t len = 1;
