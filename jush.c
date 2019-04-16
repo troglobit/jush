@@ -28,6 +28,7 @@
 struct env {
 	char prevcwd[PATH_MAX];
 	int pipes;
+	int bg;
 	int exit;
 };
 
@@ -78,6 +79,7 @@ static void run(char *args[])
 
 static void pipeit(char *args[], struct env *env)
 {
+	pid_t pid;
 	int fd[2];
 
 	if (!env->pipes)
@@ -86,7 +88,8 @@ static void pipeit(char *args[], struct env *env)
 	if (pipe(fd))
 		err(1, "Failed creating pipe");
 
-	if (!fork()) {
+	pid = fork();
+	if (!pid) {
 		close(STDOUT_FILENO);
 		if (dup(fd[STDOUT_FILENO]) < 0)
 			err(1, "Failed redirecting stdout");
@@ -101,7 +104,7 @@ static void pipeit(char *args[], struct env *env)
 		err(1, "Failed redirecting stdin");
 	close(fd[STDIN_FILENO]);
 
-	wait(NULL);
+	waitpid(pid, NULL, 0);
 
 	env->pipes--;
 	while (*args)
@@ -118,6 +121,7 @@ static int parse(char *line, char *args[], struct env *env)
 	int num = 0;
 
 	env->pipes = 0;
+	env->bg = 0;
 
 	args[num++] = strtok(line, sep);
 	do {
@@ -127,9 +131,16 @@ static int parse(char *line, char *args[], struct env *env)
 				args[num++] = NULL;
 				env->pipes++;
 				token++;
-				if (token[0] == 0)
-					continue;
 			}
+
+			if (token[0] == '&') {
+				args[num++] = NULL;
+				env->bg = 1;
+				token++;
+			}
+
+			if (token[0] == 0)
+				continue;
 		}
 
 		args[num++] = token;
@@ -140,6 +151,7 @@ static int parse(char *line, char *args[], struct env *env)
 
 static void eval(char *line, struct env *env)
 {
+	pid_t pid;
 	char *args[strlen(line)];
 
 	if (parse(line, args, env))
@@ -148,14 +160,16 @@ static void eval(char *line, struct env *env)
 	if (builtin(args, env))
 		return;
 
-	if (!fork()) {
+	pid = fork();
+	if (!pid) {
 		if (env->pipes)
 			pipeit(args, env);
 		else
 			run(args);
 	}
 
-	wait(NULL);
+	if (!env->bg)
+		waitpid(pid, NULL, 0);
 }
 
 static void breakit(int signo)
