@@ -149,9 +149,37 @@ static void eval(char *line)
 	wait(NULL);
 }
 
+char *prompt(char *buf, size_t len)
+{
+	size_t hlen;
+	char flag, *home, *who, *cwd;
+	char hostname[80];
+	char tmp[80];
+
+	home = getenv("HOME");
+	hlen = strlen(home);
+	cwd = getcwd(tmp, sizeof(tmp));
+	if (!strncmp(home, cwd, hlen)) {
+		cwd = &tmp[hlen - 1];
+		cwd[0] = '~';
+	}
+	gethostname(hostname, sizeof(hostname));
+
+	who = getenv("LOGNAME");
+	if (compare(who, "root"))
+		flag = '#';
+	else
+		flag = '$';
+
+	snprintf(buf, len, "\033[01;32m%s@%s\033[00m:\033[01;34m%s\033[00m%c ", who, hostname, cwd, flag);
+
+	return buf;
+}
+
 int main(int argc, char *argv[])
 {
 	char *line;
+	char buf[80];
 	int cmd = 0;
 	int c;
 
@@ -185,14 +213,14 @@ int main(int argc, char *argv[])
 			strcat(line, " ");
 		}
 
-		eval(line);
+		eval(line, &env);
 		free(line);
 
 		return 0;
 	}
 
-	while ((line = readline("$ ")))
-		eval(line);
+	while ((line = readline(prompt(buf, sizeof(buf)))))
+		eval(line, &env);
 
 	return 0;
 }
