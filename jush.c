@@ -158,11 +158,11 @@ static void eval(char *line, struct env *env)
 	wait(NULL);
 }
 
-char *prompt(char *buf, size_t len)
+static char *prompt(char *buf, size_t len)
 {
 	size_t hlen;
 	char flag, *home, *who, *cwd;
-	char hostname[80];
+	char hostname[HOST_NAME_MAX];
 	char tmp[80];
 
 	home = getenv("HOME");
@@ -189,7 +189,7 @@ int main(int argc, char *argv[])
 {
 	struct env env;
 	char *line;
-	char buf[80];
+	char ps1[2 * HOST_NAME_MAX];
 	int cmd = 0;
 	int c;
 
@@ -231,7 +231,7 @@ int main(int argc, char *argv[])
 
 	memset(&env, 0, sizeof(env));
 	while (!env.exit) {
-		line = readline(prompt(buf, sizeof(buf)));
+		line = readline(prompt(ps1, sizeof(ps1)));
 		if (!line) {
 			puts("");
 			break;
