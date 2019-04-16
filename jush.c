@@ -16,6 +16,7 @@
  */
 
 #include <err.h>
+#include <errno.h>
 #include <limits.h>
 #include <getopt.h>
 #include <string.h>
@@ -27,13 +28,51 @@
 #include <sys/wait.h>
 
 #define HISTFILE "~/.jush_history"
+#define MAXJOBS  100
 
 struct env {
 	char prevcwd[PATH_MAX];
 	int pipes;
 	int bg;
+	pid_t jobs[MAXJOBS];
+	int lastjob;
 	int exit;
 };
+
+static void addjob(struct env *env, pid_t pid)
+{
+	for (int i = 0; i < MAXJOBS; i++) {
+		if (env->jobs[i] != 0)
+			continue;
+
+		env->jobs[i] = pid;
+//		printf("[%d] Running            %s\n", i, job.cmdline);
+		printf("[%d] %d\n", i, pid);
+		break;
+	}
+}
+
+static void deljob(struct env *env, pid_t pid)
+{
+	for (int i = 0; i < MAXJOBS; i++) {
+		if (env->jobs[i] != pid)
+			continue;
+
+		env->jobs[i] = 0;
+		printf("[%d] Done\n", i);
+		break;
+	}
+}
+
+static void jobs(struct env *env)
+{
+	for (int i = 0; i < MAXJOBS; i++) {
+		if (env->jobs[i] == 0)
+			continue;
+
+		printf("[%d] %d\n", i, env->jobs[i]);
+	}
+}
 
 static int compare(const char *arg1, const char *arg2)
 {
@@ -68,6 +107,29 @@ static int builtin(char *args[], struct env *env)
 		free(path);
 	} else if (compare(args[0], "exit")) {
 		env->exit = 1;
+	} else if (compare(args[0], "jobs")) {
+		jobs(env);
+	} else if (compare(args[0], "fg")) {
+		int id;
+
+		if (!args[1])
+			id = env->lastjob;
+		else
+			id = atoi(args[1]);
+
+		if (id < 0 || id >= MAXJOBS) {
+		fg_fail:
+			warnx("invalid job id");
+		} else {
+			pid_t pid;
+
+			pid = env->jobs[id];
+			if (pid <= 0)
+				goto fg_fail;
+
+			while (waitpid(pid, NULL, 0) < 0 && EINTR == errno)
+				kill(pid, SIGINT);
+		}
 	} else
 		return 0;
 
@@ -171,8 +233,18 @@ static void eval(char *line, struct env *env)
 			run(args);
 	}
 
-	if (!env->bg)
+	if (env->bg)
+		addjob(env, pid);
+	else
 		waitpid(pid, NULL, 0);
+}
+
+static void reaper(struct env *env)
+{
+	pid_t pid;
+
+	while ((pid = waitpid(-1, NULL, WNOHANG)) > 0)
+		deljob(env, pid);
 }
 
 static void breakit(int signo)
@@ -277,6 +349,8 @@ int main(int argc, char *argv[])
 		}
 
 		eval(line, &env);
+
+		reaper(&env);
 	}
 	write_history(histfile());
 
