@@ -22,8 +22,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <wordexp.h>
 #include <editline.h>
 #include <sys/wait.h>
+
+#define HISTFILE "~/.jush_history"
 
 struct env {
 	char prevcwd[PATH_MAX];
@@ -176,6 +179,21 @@ static void breakit(int signo)
 {
 }
 
+static char *histfile(void)
+{
+	static char *ptr = NULL;
+
+	if (!ptr) {
+		wordexp_t we;
+
+		wordexp(HISTFILE, &we, 0);
+		ptr = strdup(we.we_wordv[0]);
+		wordfree(&we);
+	}
+
+	return ptr;
+}
+
 static char *prompt(char *buf, size_t len)
 {
 	size_t hlen;
@@ -250,6 +268,7 @@ int main(int argc, char *argv[])
 	}
 
 	memset(&env, 0, sizeof(env));
+	read_history(histfile());
 	while (!env.exit) {
 		line = readline(prompt(ps1, sizeof(ps1)));
 		if (!line) {
@@ -259,6 +278,7 @@ int main(int argc, char *argv[])
 
 		eval(line, &env);
 	}
+	write_history(histfile());
 
 	return 0;
 }
