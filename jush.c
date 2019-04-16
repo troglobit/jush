@@ -16,6 +16,7 @@
  */
 
 #include <err.h>
+#include <limits.h>
 #include <getopt.h>
 #include <string.h>
 #include <stdio.h>
@@ -25,6 +26,7 @@
 #include <sys/wait.h>
 
 struct env {
+	char prevcwd[PATH_MAX];
 	int pipes;
 	int exit;
 };
@@ -42,14 +44,20 @@ static int builtin(char *args[], struct env *env)
 	if (compare(args[0], "cd")) {
 		char *arg, *path;
 
-
 		arg = args[1];
 		if (!arg || compare(arg, "~"))
 			arg = getenv("HOME");
+		if (arg && compare(arg, "-"))
+			arg = env->prevcwd;
 
 		path = realpath(arg, NULL);
-		if (!path)
-			err(1, "cd");
+		if (!path) {
+			warn("cd");
+			return 1;
+		}
+
+		if (!getcwd(env->prevcwd, sizeof(env->prevcwd)))
+			warn("Cannot find current working directory");
 
 		if (chdir(path))
 			warn("Failed cd %s", path);
