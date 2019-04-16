@@ -28,6 +28,39 @@ struct env {
 	int pipes;
 };
 
+static int compare(const char *arg1, const char *arg2)
+{
+	if (!arg1 || !arg2)
+		return 0;
+
+	return !strcmp(arg1, arg2);
+}
+
+static int builtin(char *args[], struct env *env)
+{
+	if (compare(args[0], "cd")) {
+		char *arg, *path;
+
+
+		arg = args[1];
+		if (!arg || compare(arg, "~"))
+			arg = getenv("HOME");
+
+		path = realpath(arg, NULL);
+		if (!path)
+			err(1, "cd");
+
+		if (chdir(path))
+			warn("Failed cd %s", path);
+		free(path);
+	} else if (compare(args[0], "exit")) {
+		exit(0);
+	} else
+		return 0;
+
+	return 1;
+}
+
 static void run(char *args[])
 {
 	execvp(args[0], args);
@@ -101,6 +134,9 @@ static void eval(char *line)
 	char *args[strlen(line)];
 
 	if (parse(line, args, &env))
+		return;
+
+	if (builtin(args, &env))
 		return;
 
 	if (!fork()) {
