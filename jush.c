@@ -108,7 +108,8 @@ static int parse(char *line, char *args[], struct env *env)
 	char *token;
 	int num = 0;
 
-	memset(env, 0, sizeof(*env));
+	env->pipes = 0;
+
 	args[num++] = strtok(line, sep);
 	do {
 		token = strtok(NULL, sep);
@@ -128,20 +129,19 @@ static int parse(char *line, char *args[], struct env *env)
 	return args[0] == NULL;
 }
 
-static void eval(char *line)
+static void eval(char *line, struct env *env)
 {
-	struct env env;
 	char *args[strlen(line)];
 
-	if (parse(line, args, &env))
+	if (parse(line, args, env))
 		return;
 
-	if (builtin(args, &env))
+	if (builtin(args, env))
 		return;
 
 	if (!fork()) {
-		if (env.pipes)
-			pipeit(args, &env);
+		if (env->pipes)
+			pipeit(args, env);
 		else
 			run(args);
 	}
@@ -178,6 +178,7 @@ char *prompt(char *buf, size_t len)
 
 int main(int argc, char *argv[])
 {
+	struct env env;
 	char *line;
 	char buf[80];
 	int cmd = 0;
@@ -219,6 +220,7 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 
+	memset(&env, 0, sizeof(env));
 	while ((line = readline(prompt(buf, sizeof(buf)))))
 		eval(line, &env);
 
