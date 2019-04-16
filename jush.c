@@ -16,8 +16,10 @@
  */
 
 #include <err.h>
+#include <getopt.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include <editline.h>
 #include <sys/wait.h>
@@ -111,6 +113,44 @@ static void eval(char *line)
 int main(int argc, char *argv[])
 {
 	char *line;
+	int cmd = 0;
+	int c;
+
+	while ((c = getopt(argc, argv, "ch")) != EOF) {
+		switch (c) {
+		case 'c':
+			cmd = 1;
+			break;
+
+		case 'h':
+			puts("Usage: jush [-ch] [CMD]");
+			return 0;
+
+		default:
+			return 1;
+		}
+	}
+
+	if (cmd) {
+		size_t len = 1;
+
+		for (int i = optind; i < argc; i++)
+			len += strlen(argv[i]) + 1;
+
+		line = calloc(1, len);
+		if (!line)
+			err(1, "Not enough memory");
+
+		for (int i = optind; i < argc; i++) {
+			strcat(line, argv[i]);
+			strcat(line, " ");
+		}
+
+		eval(line);
+		free(line);
+
+		return 0;
+	}
 
 	while ((line = readline("$ ")))
 		eval(line);
