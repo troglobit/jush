@@ -26,6 +26,7 @@
 
 struct env {
 	int pipes;
+	int exit;
 };
 
 static int compare(const char *arg1, const char *arg2)
@@ -54,7 +55,7 @@ static int builtin(char *args[], struct env *env)
 			warn("Failed cd %s", path);
 		free(path);
 	} else if (compare(args[0], "exit")) {
-		exit(0);
+		env->exit = 1;
 	} else
 		return 0;
 
@@ -221,8 +222,15 @@ int main(int argc, char *argv[])
 	}
 
 	memset(&env, 0, sizeof(env));
-	while ((line = readline(prompt(buf, sizeof(buf)))))
+	while (!env.exit) {
+		line = readline(prompt(buf, sizeof(buf)));
+		if (!line) {
+			puts("");
+			break;
+		}
+
 		eval(line, &env);
+	}
 
 	return 0;
 }
