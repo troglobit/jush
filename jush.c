@@ -16,6 +16,7 @@
  */
 
 #include <err.h>
+#include <pwd.h>
 #include <errno.h>
 #include <limits.h>
 #include <getopt.h>
@@ -85,6 +86,53 @@ static int compare(const char *arg1, const char *arg2)
 		return 0;
 
 	return !strcmp(arg1, arg2);
+}
+
+static char *tilde_expand(char *token)
+{
+	struct passwd *pw;
+	size_t len;
+	char *tilde, *ptr, *arg, *buf;
+
+	if (!token)
+		return NULL;
+
+	arg = strdup(token);
+	if (!arg || token[0] != '~')
+		return arg;
+
+	ptr = strchr(arg, '/');
+	if (ptr)
+		*ptr++ = 0;
+	else
+		ptr = strchr(arg, 0);
+
+	/*
+	 * ~username/path
+	 * ~/path
+	 */
+	if (arg[1]) {
+		pw = getpwnam(&arg[1]);
+		if (!pw) {
+			free(arg);
+			return strdup(token);
+		}
+
+		tilde = pw->pw_dir;
+	} else {
+		tilde = getenv("HOME");
+	}
+
+	len = strlen(tilde) + strlen(ptr) + 2;
+	buf = malloc(len);
+	if (!buf) {
+		free(arg);
+		return NULL;
+	}
+
+	snprintf(buf, len, "%s/%s", tilde, ptr);
+
+	return buf;
 }
 
 static int builtin(char *args[], struct env *env)
@@ -208,10 +256,10 @@ static int parse(char *line, char *args[], struct env *env)
 		}
 
 		if (*token)
-			args[num++] = strdup(token);
+			args[num++] = tilde_expand(token);
 		token = strtok(NULL, sep);
 	}
-	args[num++] = token;
+	args[num++] = NULL;
 
 	return args[0] == NULL;
 }
