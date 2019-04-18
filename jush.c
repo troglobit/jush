@@ -15,6 +15,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "config.h"
 #include <err.h>
 #include <pwd.h>
 #include <errno.h>
@@ -135,6 +136,27 @@ static char *tilde_expand(char *token)
 	return buf;
 }
 
+static void help(void)
+{
+	puts("This is jush version " VERSION ", a barely usable UNIX shell.\n");
+
+	puts("Features:");
+	puts("   ls | wc  Pipes work                   cmd &    Backgrounding works\n");
+
+	puts("Built-in commands:");
+	puts("   help     This command                 exit     Exit jush, Ctrl-d also works");
+	puts("   jobs     List background jobs         fg [ID]  Put job (ID) in foreground");
+	puts("   cd [DIR] Change directory\n");
+
+	puts("Helpful keybindings for line editing:");
+	puts("   Ctrl-a   Beginning of line            Ctrl-p   Previous line");
+	puts("   Ctrl-e   End of line                  Ctrl-n   Next line");
+	puts("   Ctrl-b   Backward one character       Ctrl-l   Redraw line if garbled");
+	puts("   Ctrl-f   Forward one character        Meta-d   Delete word");
+	puts("   Ctrl-k   Cut text to end of line      Ctrl-r   Search history");
+	puts("   Ctrl-y   Paste previously cut text    Ctrl-c   Abort current command");
+}
+
 static int builtin(char *args[], struct env *env)
 {
 	if (compare(args[0], "cd")) {
@@ -160,6 +182,8 @@ static int builtin(char *args[], struct env *env)
 		free(path);
 	} else if (compare(args[0], "exit")) {
 		env->exit = 1;
+	} else if (compare(args[0], "help")) {
+		help();
 	} else if (compare(args[0], "jobs")) {
 		jobs(env);
 	} else if (compare(args[0], "fg")) {
