@@ -19,6 +19,7 @@
 #include <err.h>
 #include <pwd.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <limits.h>
 #include <getopt.h>
 #include <string.h>
@@ -27,6 +28,8 @@
 #include <unistd.h>
 #include <wordexp.h>
 #include <editline.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <sys/wait.h>
 
 #define HISTFILE "~/.jush_history"
@@ -213,8 +216,52 @@ static int builtin(char *args[], struct env *env)
 	return 1;
 }
 
+static void redirect(char *args[])
+{
+	char *arg = NULL;
+	int i, flags, fd;
+	int mode = S_IRWXU | S_IRWXG | S_IRWXO;
+	int stdio = -1;
+
+	for (i = 0; args[i]; i++) {
+		arg = args[i];
+
+		if (*arg == '>') {
+			arg++;
+			if (*arg == '>')
+				flags = O_WRONLY | O_APPEND;
+			else
+				flags = O_WRONLY | O_CREAT | O_TRUNC;
+			stdio = STDOUT_FILENO;
+			break;
+		}
+
+		if (*arg == '<') {
+			arg++;
+			flags = O_RDONLY;
+			stdio = STDIN_FILENO;
+			break;
+		}
+	}
+
+	if (!arg || stdio < 0)
+		return;
+	if (!*arg)
+		arg = args[i + 1];
+	if (!arg)
+		return;
+
+	fd = open(arg, flags, mode);
+	args[i] = NULL;
+	close(stdio);
+	if (dup(fd) < 0)
+		err(1, "Failed redirecting %s", stdio == STDIN_FILENO ? "stdin" : "stdout");
+	close(fd);
+}
+
 static void run(char *args[])
 {
+	redirect(args);
 	execvp(args[0], args);
 	err(1, "Failed executing %s", args[0]);
 }
