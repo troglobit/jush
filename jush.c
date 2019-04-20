@@ -315,8 +315,9 @@ static void eval(char *line, struct env *env)
 
 cleanup:
 	for (size_t i = 0; i < NELEMS(args); i++) {
-		if (args[i])
-			free(args[i]);
+		if (!args[i])
+			continue;
+		free(args[i]);
 	}
 }
 
