@@ -44,6 +44,7 @@ struct env {
 	char prevcwd[PATH_MAX];
 	int pipes;
 	int bg;
+	int status;
 	pid_t jobs[MAXJOBS];
 	int lastjob;
 	int exit;
@@ -92,17 +93,17 @@ static int compare(const char *arg1, const char *arg2)
 	return !strcmp(arg1, arg2);
 }
 
-static char *tilde_expand(char *token)
+/*
+ * ~username/path
+ * ~/path
+ */
+static char *tilde_expand(char *arg)
 {
 	struct passwd *pw;
 	size_t len;
-	char *tilde, *ptr, *arg, *buf;
+	char *tilde, *ptr, *buf;
 
-	if (!token)
-		return NULL;
-
-	arg = strdup(token);
-	if (!arg || token[0] != '~')
+	if (arg[0] != '~')
 		return arg;
 
 	ptr = strchr(arg, '/');
@@ -111,16 +112,10 @@ static char *tilde_expand(char *token)
 	else
 		ptr = strchr(arg, 0);
 
-	/*
-	 * ~username/path
-	 * ~/path
-	 */
 	if (arg[1]) {
 		pw = getpwnam(&arg[1]);
-		if (!pw) {
-			free(arg);
-			return strdup(token);
-		}
+		if (!pw)
+			return strdup(arg);
 
 		tilde = pw->pw_dir;
 	} else {
@@ -129,14 +124,73 @@ static char *tilde_expand(char *token)
 
 	len = strlen(tilde) + strlen(ptr) + 2;
 	buf = malloc(len);
-	if (!buf) {
-		free(arg);
+	if (!buf)
 		return NULL;
-	}
 
 	snprintf(buf, len, "%s/%s", tilde, ptr);
 
 	return buf;
+}
+
+static char *env_expand(char *arg, struct env *env)
+{
+	char *ptr;
+
+	ptr = strchr(arg, '$');
+	if (!ptr)
+		return arg;
+
+	if (ptr[1] == '?') {
+		size_t len;
+		char *buf;
+
+		*ptr++ = 0;
+		len = strlen(arg) + sizeof(int) + 1;
+
+		buf = malloc(len);
+		if (!buf)
+			return NULL;
+
+		snprintf(buf, len, "%s%d", arg, WEXITSTATUS(env->status));
+		free(arg);
+
+		return buf;
+	} else {
+		char *var;
+
+		var = getenv(ptr + 1);
+		if (var) {
+			size_t len;
+			char *buf;
+
+			*ptr++ = 0;
+			len = strlen(arg) + strlen(var) + 1;
+			buf = malloc(len);
+			if (!buf)
+				return NULL;
+
+			snprintf(buf, len, "%s%s", arg, var);
+			free(arg);
+
+			return buf;
+		}
+	}
+
+	return arg;
+}
+
+static char *expand(char *token, struct env *env)
+{
+	char *arg;
+
+	arg = strdup(token);
+	if (!token || !arg)
+		return NULL;
+
+	arg = tilde_expand(arg);
+	arg = env_expand(arg, env);
+
+	return arg;
 }
 
 static void help(void)
@@ -327,7 +381,7 @@ static int parse(char *line, char *args[], struct env *env)
 		}
 
 		if (*token)
-			args[num++] = tilde_expand(token);
+			args[num++] = expand(token, env);
 		token = strtok(NULL, sep);
 	}
 	args[num++] = NULL;
@@ -358,7 +412,7 @@ static void eval(char *line, struct env *env)
 	if (env->bg)
 		addjob(env, pid);
 	else
-		waitpid(pid, NULL, 0);
+		waitpid(pid, &env->status, 0);
 
 cleanup:
 	for (size_t i = 0; i < NELEMS(args); i++) {
