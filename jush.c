@@ -58,6 +58,7 @@ static void addjob(struct env *env, pid_t pid)
 			continue;
 
 		env->jobs[i] = pid;
+		env->lastjob = i;
 //		printf("[%d] Running            %s\n", i, job.cmdline);
 		printf("[%d] %d\n", i, pid);
 		break;
@@ -558,6 +559,8 @@ int main(int argc, char *argv[])
 	}
 
 	memset(&env, 0, sizeof(env));
+	env.lastjob = -1;
+
 	hist = histfile();
 	rl_initialize();
 	read_history(hist);
