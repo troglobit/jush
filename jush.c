@@ -116,7 +116,7 @@ static char *tilde_expand(char *arg)
 	if (arg[1]) {
 		pw = getpwnam(&arg[1]);
 		if (!pw)
-			return strdup(arg);
+			return arg;
 
 		tilde = pw->pw_dir;
 	} else {
@@ -125,10 +125,13 @@ static char *tilde_expand(char *arg)
 
 	len = strlen(tilde) + strlen(ptr) + 2;
 	buf = malloc(len);
-	if (!buf)
+	if (!buf) {
+		free(arg);
 		return NULL;
+	}
 
 	snprintf(buf, len, "%s/%s", tilde, ptr);
+	free(arg);
 
 	return buf;
 }
@@ -511,7 +514,7 @@ static char *prompt(char *buf, size_t len)
 int main(int argc, char *argv[])
 {
 	struct env env;
-	char *line;
+	char *line, *hist;
 	char ps1[2 * HOST_NAME_MAX];
 	int cmd = 0;
 	int c;
@@ -555,7 +558,10 @@ int main(int argc, char *argv[])
 	}
 
 	memset(&env, 0, sizeof(env));
-	read_history(histfile());
+	hist = histfile();
+	rl_initialize();
+	read_history(hist);
+
 	while (!env.exit) {
 		line = readline(prompt(ps1, sizeof(ps1)));
 		if (!line) {
@@ -568,7 +574,10 @@ int main(int argc, char *argv[])
 
 		reaper(&env);
 	}
-	write_history(histfile());
+
+	write_history(hist);
+	rl_uninitialize();
+	free(hist);
 
 	return 0;
 }
