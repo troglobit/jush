@@ -151,7 +151,7 @@ static char *recompose(char *fmt, ...)
 
 	va_start(ap, fmt);
 	while (*fmt) {
-		char tmp[sizeof(int) + 1];
+		char tmp[64];
 		char *s;
 
 		if (*fmt == '%') {
@@ -210,6 +210,22 @@ static char *env_expand(char *arg, struct env *env)
 	if (ptr[1] == '?') {
 		*ptr++ = 0;
 		return recompose("%a%d", arg, WEXITSTATUS(env->status));
+	}
+
+	if (ptr[1] == '$') {
+		*ptr++ = 0;
+		return recompose("%d", getpid());
+	}
+
+	if (ptr[1] == '!') {
+		int id;
+
+		*ptr++ = 0;
+		id = env->lastjob;
+		if (id < 0 || id >= MAXJOBS)
+			return strdup("");
+
+		return recompose("%d", env->jobs[id]);
 	}
 
 	return arg;
