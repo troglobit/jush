@@ -227,7 +227,7 @@ int main(int argc, char *argv[])
 {
 	struct env env;
 	char *line, *hist;
-	char ps1[2 * HOST_NAME_MAX];
+	char ps1[2 * MAXHOSTNAMELEN];
 	int cmd = 0;
 	int c;
 
