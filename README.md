@@ -3,22 +3,22 @@ jush - just a useless shell
 [![Travis Status][]][Travis]
 
 jush is an almost useless shell for UNIX systems.  It is developed on
-Linux but is regularly tested on FreeBSD as well.
+Ubuntu and Debian GNU/Linux but is regularly tested on FreeBSD as well.
 
 ![The jush shell](jush.png)
 > _"I'm writing my own shell, it's nothing fancy like bash or anything ..."_
 
-The project use the de facto standard GNU configure and build system to
-ensure portability, so all you need is to run the `./configure` script
-to get up and running.  If you check out the sources from GIT, first run
-`./autogen.sh` to create the necessary files -- this also requires the
-GNU autoconf and automake tools.
 
-Goals:
+Goals
+-----
+
 - Have fun
 - Be an example of [editline][] use
 
-Targets:
+
+Targets
+-------
+
 - [X] Pipes
 - [X] Backgrounding and job control
 - [X] Redirect
@@ -26,6 +26,31 @@ Targets:
 - [ ] Command completion
 - [X] Filename completion
 
+
+Building
+--------
+
+The project use the de facto standard GNU configure and build system to
+ensure portability, so all you need is to run the `./configure` script
+to get up and running.  If you check out the sources from GIT, first run
+`./autogen.sh` to create the necessary files -- this also requires the
+GNU autoconf and automake tools.
+
+
+Origin & References
+-------------------
+
+jush was written from scratch by [Joachim Nilsson](http://troglobit.com)
+and is availalbe as Open Source under the ISC license.
+
+The name doesn't really mean anything, but it could be one of:
+
+- Jocke's UNIX SHell
+- Just give me a UNIX SHell
+- Just a Useless SHell
+- Jocke's ush (micro shell)
+
+> The short form of Joachim is Jocke, only makes sense in Swedish
 
 [Travis]:        https://travis-ci.com/troglobit/jush
 [Travis Status]: https://travis-ci.com/troglobit/jush.png?branch=master
