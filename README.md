@@ -12,9 +12,11 @@ Ubuntu and Debian GNU/Linux but is regularly tested on FreeBSD as well.
 Features
 --------
 
-- Pipes
-- Backgrounding and job control
-- Redirect (basic)
+- Pipes using `|`
+- Backgrounding using `&`
+- Basic job control
+- Redirect, basic using `<` and `>`
+- Command separation using `;`
 - Environment variables (basic)
 - Command completion
 - Filename completion
