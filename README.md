@@ -9,22 +9,14 @@ Ubuntu and Debian GNU/Linux but is regularly tested on FreeBSD as well.
 > _"I'm writing my own shell, it's nothing fancy like bash or anything ..."_
 
 
-Goals
------
+Features
 
-- Have fun
-- Be an example of [editline][] use
-
-
-Targets
--------
-
-- [x] Pipes
-- [x] Backgrounding and job control
-- [x] Redirect
-- [x] Environment variables
-- [x] Command completion
-- [x] Filename completion
+- Pipes
+- Backgrounding and job control
+- Redirect (basic)
+- Environment variables (basic)
+- Command completion
+- Filename completion
 
 
 Building
