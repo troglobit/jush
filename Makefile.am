@@ -1,10 +1,7 @@
-bin_PROGRAMS    = jush
-jush_SOURCES    = jush.c
-jush_CFLAGS     = -W -Wall -Wextra -Wno-unused-parameter -std=gnu99
-jush_CFLAGS    += $(editline_CFLAGS)
-jush_LDADD      = $(editline_LIBS)
 doc_DATA        = README.md LICENSE
 EXTRA_DIST      = README.md LICENSE
+DISTCLEANFILES  = *~ DEADJOE
+SUBDIRS         = src
 
 # lintian --profile debian -i -I --show-overrides ../$PKG.changes
 package:
