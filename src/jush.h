@@ -49,6 +49,7 @@
 struct env {
 	char prevcwd[PATH_MAX];
 	int pipes;
+	int cmds;
 	int bg;
 	int status;
 	pid_t jobs[MAXJOBS];

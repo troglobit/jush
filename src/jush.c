@@ -111,12 +111,14 @@ static int parse(char *line, char *args[], struct env *env)
 	int num = 0;
 
 	env->pipes = 0;
+	env->cmds = 1;
 	env->bg = 0;
 
 	token = strtok(line, sep);
 	while (token) {
 		size_t len = strlen(token) - 1;
 		int pipes = 0;
+		int cmds = 0;
 		int bg = 0;
 
 		if (token[0] == '|') {
@@ -127,6 +129,16 @@ static int parse(char *line, char *args[], struct env *env)
 		if (token[len] == '|') {
 			token[len] = 0;
 			pipes++;
+		}
+
+		if (token[0] == ';') {
+			args[num++] = NULL;
+			env->cmds++;
+			token++;
+		}
+		if (token[len] == ';') {
+			token[len] = 0;
+			cmds++;
 		}
 
 		if (token[0] == '&') {
@@ -142,11 +154,13 @@ static int parse(char *line, char *args[], struct env *env)
 		if (*token)
 			args[num++] = expand(token, env);
 
-		if (pipes || bg) {
+		if (pipes || cmds || bg) {
 			args[num++] = NULL;
 
 			if (pipes)
 				env->pipes++;
+			if (cmds)
+				env->cmds++;
 			if (bg)
 				env->bg++;
 		}
@@ -161,33 +175,42 @@ static int parse(char *line, char *args[], struct env *env)
 static void eval(char *line, struct env *env)
 {
 	pid_t pid;
-	char *args[strlen(line)];
+	char *argv[strlen(line)];
+	char **args;
 
-	memset(args, 0, sizeof(args));
-	if (parse(line, args, env))
+	memset(argv, 0, sizeof(argv));
+	if (parse(line, argv, env))
 		goto cleanup;
 
-	if (builtin(args, env))
+	if (builtin(argv, env))
 		goto cleanup;
 
-	pid = fork();
-	if (!pid) {
-		if (env->pipes)
-			pipeit(args, env);
+	args = argv;
+	do {
+		pid = fork();
+		if (!pid) {
+			if (env->pipes)
+				pipeit(args, env);
+			else
+				run(args);
+		}
+
+		if (env->bg)
+			addjob(env, pid);
 		else
-			run(args);
-	}
+			waitpid(pid, &env->status, 0);
 
-	if (env->bg)
-		addjob(env, pid);
-	else
-		waitpid(pid, &env->status, 0);
+		env->cmds--;
+		while (*args)
+			args++;
+		args++;
+	} while (env->cmds);
 
 cleanup:
-	for (size_t i = 0; i < NELEMS(args); i++) {
-		if (!args[i])
+	for (size_t i = 0; i < NELEMS(argv); i++) {
+		if (!argv[i])
 			continue;
-		free(args[i]);
+		free(argv[i]);
 	}
 }
 
