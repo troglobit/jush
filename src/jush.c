@@ -115,20 +115,42 @@ static int parse(char *line, char *args[], struct env *env)
 
 	token = strtok(line, sep);
 	while (token) {
+		size_t len = strlen(token) - 1;
+		int pipes = 0;
+		int bg = 0;
+
 		if (token[0] == '|') {
 			args[num++] = NULL;
 			env->pipes++;
 			token++;
 		}
+		if (token[len] == '|') {
+			token[len] = 0;
+			pipes++;
+		}
 
 		if (token[0] == '&') {
 			args[num++] = NULL;
-			env->bg = 1;
+			env->bg++;
 			token++;
+		}
+		if (token[len] == '&') {
+			token[len] = 0;
+			bg++;
 		}
 
 		if (*token)
 			args[num++] = expand(token, env);
+
+		if (pipes || bg) {
+			args[num++] = NULL;
+
+			if (pipes)
+				env->pipes++;
+			if (bg)
+				env->bg++;
+		}
+
 		token = strtok(NULL, sep);
 	}
 	args[num++] = NULL;
