@@ -1,0 +1,21 @@
+language: c
+
+sudo: false
+
+compiler:
+  - gcc
+  - clang
+
+install:
+  - wget https://github.com/troglobit/editline/releases/download/1.16.0/editline-1.16.0.tar.xz
+  - tar xf editline-1.16.0.tar.xz
+  - (cd editline-1.16.0 && ./configure --prefix=/tmp && make && make install-strip)
+
+script:
+  - ./autogen.sh
+  - PKG_CONFIG_PATH=/tmp/lib/pkgconfig ./configure --disable-silent-rules --prefix=/tmp
+  - make -j5
+  - make install-strip
+  - tree /tmp
+  - ldd /tmp/bin/jush
+  - LD_LIBRARY_PATH=/tmp/lib /tmp/bin/jush -h
