@@ -200,7 +200,7 @@ static char *prompt(char *buf, size_t len)
 {
 	size_t hlen;
 	char flag, *home, *who, *cwd;
-	char hostname[HOST_NAME_MAX];
+	char hostname[MAXHOSTNAMELEN];
 	char tmp[80];
 
 	home = getenv("HOME");
