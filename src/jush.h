@@ -25,6 +25,7 @@
 #include <fcntl.h>
 #include <limits.h>
 #include <getopt.h>
+#include <signal.h>
 #include <string.h>
 #include <stdarg.h>
 #include <stdio.h>
