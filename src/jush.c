@@ -274,6 +274,8 @@ int main(int argc, char *argv[])
 
 	hist = histfile();
 	rl_initialize();
+	rl_set_complete_func(complete);
+	rl_set_list_possib_func(list_possible);
 	read_history(hist);
 
 	while (!env.exit) {

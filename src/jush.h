@@ -66,6 +66,9 @@ static inline int compare(const char *arg1, const char *arg2)
 
 int builtin(char *args[], struct env *env);
 
+char *complete(char *text, int *match);
+int list_possible(char *text, char ***av);
+
 char *expand(char *token, struct env *env);
 
 void addjob (struct env *env, pid_t pid);
