@@ -6,6 +6,11 @@ compiler:
   - gcc
   - clang
 
+addons:
+  apt:
+    packages:
+      - tree
+
 install:
   - wget https://github.com/troglobit/editline/releases/download/1.16.0/editline-1.16.0.tar.xz
   - tar xf editline-1.16.0.tar.xz
