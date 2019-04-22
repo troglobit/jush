@@ -12,7 +12,7 @@ Targets:
 - [X] Pipes
 - [X] Backgrounding and job control
 - [X] Redirect
-- [ ] Environment variables
+- [X] Environment variables
 - [ ] Command completion
 - [X] Filename completion
 
