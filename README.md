@@ -7,7 +7,7 @@ Goals:
 Targets:
 - [X] Pipes
 - [X] Backgrounding and job control
-- [ ] Redirect
+- [X] Redirect
 - [ ] Environment variables
 - [ ] Command completion
 - [X] Filename completion
