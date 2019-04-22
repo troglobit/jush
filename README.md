@@ -19,12 +19,12 @@ Goals
 Targets
 -------
 
-- [X] Pipes
-- [X] Backgrounding and job control
-- [X] Redirect
-- [X] Environment variables
-- [ ] Command completion
-- [X] Filename completion
+- [x] Pipes
+- [x] Backgrounding and job control
+- [x] Redirect
+- [x] Environment variables
+- [x] Command completion
+- [x] Filename completion
 
 
 Building
