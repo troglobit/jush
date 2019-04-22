@@ -32,9 +32,13 @@ Building
 
 The project use the de facto standard GNU configure and build system to
 ensure portability, so all you need is to run the `./configure` script
-to get up and running.  If you check out the sources from GIT, first run
-`./autogen.sh` to create the necessary files -- this also requires the
-GNU autoconf and automake tools.
+to get up and running.
+
+**Requirement:** [editline][]
+
+If you check out the sources from GIT, first run `./autogen.sh` which
+creates the necessary files -- this also requires the GNU autoconf and
+automake tools.
 
 
 Origin & References
