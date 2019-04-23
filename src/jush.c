@@ -94,7 +94,7 @@ static void pipeit(char *args[], struct env *env)
 		err(1, "Failed redirecting stdin");
 	close(fd[STDIN_FILENO]);
 
-	waitpid(pid, NULL, 0);
+	waitpid(pid, &env->status, 0);
 
 	env->pipes--;
 	while (*args)
