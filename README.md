@@ -17,6 +17,7 @@ Features
 - Basic job control
 - Redirect, basic using `<` and `>`
 - Command separation using `;`
+- Conditional execution `cmd && cmd` and `cmd || cmd`
 - Environment variables (basic)
 - Command completion
 - Filename completion
