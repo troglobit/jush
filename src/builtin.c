@@ -22,7 +22,9 @@ static void help(void)
 	puts("This is jush version " VERSION ", a barely usable UNIX shell.\n");
 
 	puts("Features:");
-	puts("   ls | wc  Pipes work                   cmd &    Backgrounding works\n");
+	puts("   ls | wc  UNIX pipes                     cmd &  Backgrounding jobs");
+	puts("   ls;  ps  Sequential command       true && cmd  Logical conditions");
+	puts("                                    false || cmd  Logical conditions");
 
 	puts("Built-in commands:");
 	puts("   help     This command                 exit     Exit jush, Ctrl-d also works");
