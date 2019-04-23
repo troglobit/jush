@@ -67,9 +67,17 @@ static void run(char *args[], struct env *env)
 	redirect(args);
 
 	cmd = args[0];
-	if (*cmd == '&') {
-		if (WIFEXITED(env->status) && WEXITSTATUS(env->status))
-			_exit(WEXITSTATUS(env->status));
+	if (cmd[0] == '&' || cmd[0] == '|') {
+		if (!WIFEXITED(env->status))
+			_exit(1);
+
+		if (cmd[0] == '&') {
+			if (WEXITSTATUS(env->status))
+				_exit(WEXITSTATUS(env->status));
+		} else {
+			if (!WEXITSTATUS(env->status))
+				_exit(WEXITSTATUS(env->status));
+		}
 
 		cmd++;
 		while (*cmd && *cmd == ' ')
@@ -144,12 +152,20 @@ static int parse(char *line, char *args[], struct env *env)
 
 		if (token[0] == '|') {
 			args[num++] = NULL;
-			env->pipes++;
 			token++;
+			if (token[0] == '|')
+				env->cmds++;
+			else
+				env->pipes++;
 		}
 		if (token[len] == '|') {
-			token[len] = 0;
-			pipes++;
+			if (token[len - 1] == '|') {
+				token[len - 1] = 0;
+				cmds++;
+			} else {
+				token[len] = 0;
+				pipes++;
+			}
 		}
 
 		if (token[0] == ';') {
@@ -195,6 +211,8 @@ static int parse(char *line, char *args[], struct env *env)
 
 			if (cmds && token[len] == '&')
 				args[num++] = strdup("&");
+			if (cmds && token[len] == '|')
+				args[num++] = strdup("|");
 		}
 
 		if (!ptr)
