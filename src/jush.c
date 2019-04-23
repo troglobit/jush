@@ -60,9 +60,26 @@ static void redirect(char *args[])
 	close(fd);
 }
 
-static void run(char *args[])
+static void run(char *args[], struct env *env)
 {
+	char *cmd;
+
 	redirect(args);
+
+	cmd = args[0];
+	if (*cmd == '&') {
+		if (WIFEXITED(env->status) && WEXITSTATUS(env->status))
+			_exit(WEXITSTATUS(env->status));
+
+		cmd++;
+		while (*cmd && *cmd == ' ')
+			cmd++;
+		if (*cmd == 0)
+			args++;
+		else
+			args[0] = cmd;
+	}
+
 	execvp(args[0], args);
 	err(1, "Failed executing %s", args[0]);
 }
@@ -73,7 +90,7 @@ static void pipeit(char *args[], struct env *env)
 	int fd[2];
 
 	if (!env->pipes)
-		run(args);
+		run(args, env);
 
 	if (pipe(fd))
 		err(1, "Failed creating pipe");
@@ -83,7 +100,7 @@ static void pipeit(char *args[], struct env *env)
 		if (dup2(fd[STDOUT_FILENO], STDOUT_FILENO) < 0)
 			err(1, "Failed redirecting stdout");
 
-		run(args);
+		run(args, env);
 	}
 
 	close(fd[STDOUT_FILENO]);
@@ -147,12 +164,20 @@ static int parse(char *line, char *args[], struct env *env)
 
 		if (token[0] == '&') {
 			args[num++] = NULL;
-			env->bg++;
 			token++;
+			if (token[0] == '&')
+				env->cmds++;
+			else
+				env->bg++;
 		}
 		if (token[len] == '&') {
-			token[len] = 0;
-			bg++;
+			if (token[len - 1] == '&') {
+				token[len - 1] = 0;
+				cmds++;
+			} else {
+				token[len] = 0;
+				bg++;
+			}
 		}
 
 		if (*token)
@@ -167,6 +192,9 @@ static int parse(char *line, char *args[], struct env *env)
 				env->cmds++;
 			if (bg)
 				env->bg++;
+
+			if (cmds && token[len] == '&')
+				args[num++] = strdup("&");
 		}
 
 		if (!ptr)
@@ -211,7 +239,7 @@ static void eval(char *line, struct env *env)
 			if (env->pipes)
 				pipeit(args, env);
 			else
-				run(args);
+				run(args, env);
 		}
 
 		if (env->bg)
