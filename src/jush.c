@@ -80,19 +80,15 @@ static void pipeit(char *args[], struct env *env)
 
 	pid = fork();
 	if (!pid) {
-		close(STDOUT_FILENO);
-		if (dup(fd[STDOUT_FILENO]) < 0)
+		if (dup2(fd[STDOUT_FILENO], STDOUT_FILENO) < 0)
 			err(1, "Failed redirecting stdout");
-		close(fd[STDOUT_FILENO]);
 
 		run(args);
 	}
 
 	close(fd[STDOUT_FILENO]);
-	close(STDIN_FILENO);
-	if (dup(fd[STDIN_FILENO]) < 0)
+	if (dup2(fd[STDIN_FILENO], STDIN_FILENO) < 0)
 		err(1, "Failed redirecting stdin");
-	close(fd[STDIN_FILENO]);
 
 	waitpid(pid, &env->status, 0);
 
@@ -106,20 +102,28 @@ static void pipeit(char *args[], struct env *env)
 
 static int parse(char *line, char *args[], struct env *env)
 {
-	const char *sep = " \t";
-	char *token;
+	char *ptr, *token;
+	char *sep1 = " \t";
+	char  sep2[2] = { 0 };
+	char *sep = sep1;
 	int num = 0;
 
 	env->pipes = 0;
 	env->cmds = 1;
 	env->bg = 0;
 
-	token = strtok(line, sep);
+	ptr = strpbrk(line, sep);
+	if (ptr)
+		*ptr++ = 0;
+	token = line;
+
 	while (token) {
-		size_t len = strlen(token) - 1;
+		size_t len;
 		int pipes = 0;
 		int cmds = 0;
 		int bg = 0;
+
+		len = strlen(token) - 1;
 
 		if (token[0] == '|') {
 			args[num++] = NULL;
@@ -165,7 +169,22 @@ static int parse(char *line, char *args[], struct env *env)
 				env->bg++;
 		}
 
-		token = strtok(NULL, sep);
+		if (!ptr)
+		    break;
+		line = ptr;
+		if (*ptr == '\'' || *ptr == '"') {
+			sep2[0] = *ptr;
+			sep = sep2;
+			line++;
+		}
+
+		ptr = strpbrk(line, sep);
+		if (ptr) {
+			if (*ptr == sep2[0])
+				sep = sep1;
+			*ptr++ = 0;
+		}
+		token = line;
 	}
 	args[num++] = NULL;
 
