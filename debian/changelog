@@ -1,0 +1,6 @@
+jush (0.1) unstable; urgency=low
+
+  * Initial Debian packaging.
+
+ -- Joachim Nilsson <troglobit@gmail.com>  Sat, 27 Apr 2019 14:32:29 +0200
+

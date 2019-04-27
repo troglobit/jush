@@ -1,0 +1,25 @@
+Source: jush
+Section: shells
+Priority: optional
+Maintainer: Joachim Nilsson <troglobit@gmail.com>
+Homepage: https://github.com/troglobit/jush
+Build-Depends: debhelper (>= 10)
+Vcs-Git: https://github.com/troglobit/jush.git
+Vcs-Browser: https://github.com/troglobit/jush/commits/
+Standards-Version: 4.3.0
+
+Package: jush
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: just a useless shell
+ jush is an almost useless shell for UNIX systems.  It support the following
+ features:
+  - Pipes using `|`
+  - Backgrounding using `&` 
+  - Basic job control
+  - Redirect, basic using `<` and `>`
+  - Command separation using `;`
+  - Conditional execution `cmd && cmd` and `cmd || cmd`
+  - Environment variables (basic)
+  - Command completion
+  - Filename completion
