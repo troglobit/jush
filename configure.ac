@@ -10,6 +10,7 @@ AC_PROG_INSTALL
 
 AC_HEADER_STDC
 
+# The Debian packaged version is too old
 PKG_CHECK_MODULES([editline], [libeditline >= 1.13.0])
 
 AC_OUTPUT
