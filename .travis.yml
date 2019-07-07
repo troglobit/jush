@@ -10,41 +10,40 @@ sudo: false
 compiler:
   - gcc
 
+# The secure: declaration is the encrypted COVERITY_SCAN_TOKEN, created
+# using the "travis encrypt" command using the project repo's public key
 env:
   global:
-   # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
-   #   via the "travis encrypt" command using the project repo's public key
+   - PKG_CONFIG_PATH=/tmp/lib/pkgconfig
    - secure: "zV4i+XQYVYAAQe33YgO90YmT4IcMd3nECI7im3KHoCUhMQyHKr95U8tCY7mcgCwW1+h/vYngtzBPkMXaNei6GgKniJXzxNIuIualzum50MssvTyspJpN3saRp7QDHSwK3NNL7TfhBY5evjffCZP0xtEpxnfGK7SIwc3SOlSLj3cwmKzE7vfJXBjWng7EMHcYZw9CFyhYmVPMQDzXuk8rU/9RuhrVKg8hYnR8q721dwukr6xosCqU+OIWobrFX+TujPmkGDLUpdY7BvGcZUkCJVabpigAgr+d/5LlGzFeq7SMcYy62jDiLQH3F69rUl6GHns2UlZiJk9yT57Di4f7ac3jDM6Kyr0cQpAFBLDKeS4X3Mwx5TMJCoSTR/5zLxmB/jBLxpnjPANCsXc5liwAWsJD2cCQeNIo8OrJ/lNaDF+MsceYGGvktBqUWrybOtXUU8g+emnsCdf0EzGrBreVj+4RVkj5t4ZFD20RFZDwIWpRtyKnCpoQiIsX7q/y+gj4DrSD6rkP/g08KXd5YtsgQrYxczRSeR60kWcO3GOrjkmJLepgIEUkO3+zTs2XAQpfLorWHe7IOdjKsfjEl/SRNKt06Mb6JWw0kV/KvPG/nAJbxUaGU03y9Phy1mU5F9NYxq7g80VZdrpgjLzyHSG04QiDSO1rTBCP0iwHqH7JGQ0="
 
 before_install:
   - echo -n | openssl s_client -connect scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-
 
-# Add missing packages needed for build
+#  apt:
+#    packages:
+#      - tree
 addons:
-  apt:
-    packages:
-      - tree
   coverity_scan:
     project:
       name: "troglobit/jush"
       description: "just a useless shell"
     notification_email: troglobit@gmail.com
-    build_command_prepend: "PKG_CONFIG_PATH=/tmp/lib/pkgconfig ./autogen.sh && ./configure"
+    build_command_prepend: "./autogen.sh && ./configure"
     build_command: "make clean all"
     branch_pattern: dev
 
-# Install build requirements from source
 install:
   - wget https://github.com/troglobit/editline/releases/download/1.16.0/editline-1.16.0.tar.xz
   - tar xf editline-1.16.0.tar.xz
   - (cd editline-1.16.0 && ./configure --prefix=/tmp && make && make install-strip)
 
 # Override default build command, we do not have `make test` yet
+#  - tree /tmp
 script:
   - ./autogen.sh
-  - PKG_CONFIG_PATH=/tmp/lib/pkgconfig ./configure --disable-silent-rules --prefix=/tmp
+  - ./configure --disable-silent-rules --prefix=/tmp
   - make -j5
   - make install-strip
-  - tree /tmp
   - ldd /tmp/bin/jush
   - LD_LIBRARY_PATH=/tmp/lib /tmp/bin/jush -h
