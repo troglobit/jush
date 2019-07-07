@@ -1,21 +1,28 @@
+# Travis CI integration
+# Defaults to GNU GCC and autotools: ./configure && make && make test
 language: c
 
+# Use docker for quicker builds, it now allows https://docs.travis-ci.com/user/apt/
 sudo: false
 
+# Test build with both GCC and Clang (LLVM)
 compiler:
   - gcc
   - clang
 
+# Add missing packages needed for build
 addons:
   apt:
     packages:
       - tree
 
+# Install build requirements from source
 install:
   - wget https://github.com/troglobit/editline/releases/download/1.16.0/editline-1.16.0.tar.xz
   - tar xf editline-1.16.0.tar.xz
   - (cd editline-1.16.0 && ./configure --prefix=/tmp && make && make install-strip)
 
+# Override default build command, we do not have `make test` yet
 script:
   - ./autogen.sh
   - PKG_CONFIG_PATH=/tmp/lib/pkgconfig ./configure --disable-silent-rules --prefix=/tmp
