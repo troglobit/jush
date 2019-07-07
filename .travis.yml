@@ -6,15 +6,32 @@ language: c
 sudo: false
 
 # Test build with both GCC and Clang (LLVM)
+#   - clang
 compiler:
   - gcc
-  - clang
+
+env:
+  global:
+   # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
+   #   via the "travis encrypt" command using the project repo's public key
+   - secure: "NqAbt2bdovVjG+rzHLi0yHOZ/e75OiZcfKSAJkyhoZFDPZhJ5B++M9N+aZpItQFvnMj3a/qL8TXLCxEq0kolX298EdRTnpGhLY7nud7K+P+Nnng9AqGNXCEGvDUghpXmbsziVbgloD+REknIer62bVw8z1LD0t1nd3YrGnWCFG5ihXnVigzsrDOenW0+lq6BAgxiVKHRGFzwTaXL02zVep6bQe0hdtO+dTN0B8n7VBZpLl+ruwqpxlODoprmCurP7rYHdaQkCiPU4pwAoVLTtA9YRnloOGDLexYFDspGWI1XHMxe6Bd0SzeEU6GOf/vkStLgeA8PoLiOVkFk4d6qqU9fZ1cvRq9g55TamJ5gJXunu1/ocUdfpA+Z02KUrO3q5yEK8igk/DSF9BmFWWjwIB0dAIwamb4evttUBpDJI0qINs4rTgrygJmeSNxAaSf+okaWhHFRz0V+3MsPKd+fF5yhZSizmsDRZmwbGi+AmUb/2iGZhqwGR2u35kcv3RCDOl1O9FEDjRBvWQaeUd87giXKWl9GliOcbRwBzZIOLSzm3nZ1GoiUPHg4G6VPl3pSP/uhSRrsmJ2RRJtGWrqtCHt/LbLXXqPk58LejscoA8qbcoF6MuF0UfeVtFpQa86q/deC1R2kQo3+/1Qg4Qnh85CfDaC1M2EsMyNt9sdZ3DE="
+
+before_install:
+  - echo -n | openssl s_client -connect scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-
 
 # Add missing packages needed for build
 addons:
   apt:
     packages:
       - tree
+  coverity_scan:
+    project:
+      name: "troglobit/jush"
+      description: "just a useless shell"
+    notification_email: troglobit@gmail.com
+    build_command_prepend: "PKG_CONFIG_PATH=/tmp/lib/pkgconfig ./autogen.sh && ./configure"
+    build_command: "make clean all"
+    branch_pattern: dev
 
 # Install build requirements from source
 install:
