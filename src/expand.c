@@ -101,8 +101,11 @@ char *expand(char *token, struct env *env)
 {
 	char *arg;
 
+	if (!token)
+		return NULL;
+
 	arg = strdup(token);
-	if (!token || !arg)
+	if (!arg)
 		return NULL;
 
 	arg = tilde_expand(arg);
