@@ -1,6 +1,6 @@
 jush - just a useless shell
 ===========================
-[![Travis Status][]][Travis]
+[![License Badge][]][License] [![Travis Status][]][Travis]
 
 jush is an almost useless shell for UNIX systems.  It is developed on
 Ubuntu and Debian GNU/Linux but is regularly tested on FreeBSD as well.
@@ -54,4 +54,6 @@ The name doesn't really mean anything, but it could be one of:
 
 [Travis]:        https://travis-ci.com/troglobit/jush
 [Travis Status]: https://travis-ci.com/troglobit/jush.png?branch=master
+[License]:       https://en.wikipedia.org/wiki/ISC_license
+[License Badge]: https://img.shields.io/badge/License-ISC-blue.svg
 [editline]:      https://github.com/troglobit/editline
