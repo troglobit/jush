@@ -50,7 +50,7 @@ char *recompose(char *fmt, ...)
 					goto done;
 				}
 				buf = ptr;
-				strncat(buf, s, len);
+				strlcat(buf, s, len);
 				break;
 
 			case 'd':
@@ -62,12 +62,12 @@ char *recompose(char *fmt, ...)
 				}
 				buf = ptr;
 				snprintf(tmp, sizeof(tmp), "%d", va_arg(ap, int));
-				strncat(buf, tmp, len);
+				strlcat(buf, tmp, len);
 				break;
 			}
 		} else {
 			snprintf(tmp, sizeof(tmp), "%c", *fmt);
-			strncat(buf, tmp, len);
+			strlcat(buf, tmp, len);
 		}
 		fmt++;
 	}
