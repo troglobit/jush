@@ -47,6 +47,7 @@ char *recompose(char *fmt, ...)
 				ptr = realloc(buf, len);
 				if (!ptr) {
 					free(buf);
+					buf = NULL;
 					goto done;
 				}
 				buf = ptr;
@@ -58,6 +59,7 @@ char *recompose(char *fmt, ...)
 				ptr = realloc(buf, len);
 				if (!ptr) {
 					free(buf);
+					buf = NULL;
 					goto done;
 				}
 				buf = ptr;
