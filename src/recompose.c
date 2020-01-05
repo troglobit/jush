@@ -32,7 +32,7 @@ char *recompose(char *fmt, ...)
 	va_start(ap, fmt);
 	while (*fmt) {
 		char tmp[64];
-		char *s;
+		char *s, *ptr;
 
 		if (*fmt == '%') {
 			fmt++;
@@ -44,17 +44,23 @@ char *recompose(char *fmt, ...)
 				s = va_arg(ap, char *);
 			str:
 				len += strlen(s);
-				buf = realloc(buf, len);
-				if (!buf)
+				ptr = realloc(buf, len);
+				if (!ptr) {
+					free(buf);
 					goto done;
+				}
+				buf = ptr;
 				strncat(buf, s, len);
 				break;
 
 			case 'd':
 				len += sizeof(int);
-				buf = realloc(buf, len);
-				if (!buf)
+				ptr = realloc(buf, len);
+				if (!ptr) {
+					free(buf);
 					goto done;
+				}
+				buf = ptr;
 				snprintf(tmp, sizeof(tmp), "%d", va_arg(ap, int));
 				strncat(buf, tmp, len);
 				break;

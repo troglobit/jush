@@ -62,6 +62,7 @@ static char **get_exec(const char *text)
 		while (dir && (d = readdir(dir))) {
 			struct stat st;
 			char file[MAXPATHLEN];
+			char **ptr;
 
 			if (d->d_name[strlen(d->d_name) - 1] == '~')
 				continue;
@@ -77,9 +78,10 @@ static char **get_exec(const char *text)
 				continue;
 
 			matches[num++] = strdup(d->d_name);
-			matches = realloc(matches, (num + 1) * sizeof(char *));
-			if (!matches)
+			ptr = realloc(matches, (num + 1) * sizeof(char *));
+			if (!ptr)
 				return NULL;
+			matches = ptr;
 		}
 		if (dir)
 			closedir(dir);
