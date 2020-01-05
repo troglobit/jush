@@ -6,9 +6,9 @@ language: c
 sudo: false
 
 # Test build with both GCC and Clang (LLVM)
-#   - clang
 compiler:
   - gcc
+  - clang
 
 # The secure: declaration is the encrypted COVERITY_SCAN_TOKEN, created
 # using the "travis encrypt" command using the project repo's public key
@@ -20,10 +20,10 @@ env:
 before_install:
   - echo -n | openssl s_client -connect scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-
 
-#  apt:
-#    packages:
-#      - tree
 addons:
+  apt:
+    packages:
+      - tree
   coverity_scan:
     project:
       name: "troglobit/jush"
@@ -39,11 +39,11 @@ install:
   - (cd editline-1.16.0 && ./configure --prefix=/tmp && make && make install-strip)
 
 # Override default build command, we do not have `make test` yet
-#  - tree /tmp
 script:
   - ./autogen.sh
   - ./configure --disable-silent-rules --prefix=/tmp
   - make -j5
   - make install-strip
   - ldd /tmp/bin/jush
+  - tree /tmp
   - LD_LIBRARY_PATH=/tmp/lib /tmp/bin/jush -h
