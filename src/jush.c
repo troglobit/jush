@@ -53,6 +53,9 @@ static void redirect(char *args[])
 		return;
 
 	fd = open(arg, flags, mode);
+	if (fd < 0)
+		return;
+
 	args[i] = NULL;
 	close(stdio);
 	if (dup(fd) < 0) {
