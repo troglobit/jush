@@ -1,6 +1,6 @@
 jush - just a useless shell
 ===========================
-[![License Badge][]][License] [![Travis Status][]][Travis]
+[![License Badge][]][License] [![Travis Status][]][Travis] [![Coverity Status][]][Coverity Scan]
 
 jush is an almost useless shell for UNIX systems.  It is developed on
 Ubuntu and Debian GNU/Linux but is regularly tested on FreeBSD as well.
@@ -52,8 +52,10 @@ The name doesn't really mean anything, but it could be one of:
 
 > The short form of Joachim is Jocke, only makes sense in Swedish
 
-[Travis]:        https://travis-ci.com/troglobit/jush
-[Travis Status]: https://travis-ci.com/troglobit/jush.png?branch=master
-[License]:       https://en.wikipedia.org/wiki/ISC_license
-[License Badge]: https://img.shields.io/badge/License-ISC-blue.svg
-[editline]:      https://github.com/troglobit/editline
+[Travis]:          https://travis-ci.com/troglobit/jush
+[Travis Status]:   https://travis-ci.com/troglobit/jush.png?branch=master
+[License]:         https://en.wikipedia.org/wiki/ISC_license
+[License Badge]:   https://img.shields.io/badge/License-ISC-blue.svg
+[Coverity Scan]:   https://scan.coverity.com/projects/18269
+[Coverity Status]: https://scan.coverity.com/projects/18269/badge.svg
+[editline]:        https://github.com/troglobit/editline
