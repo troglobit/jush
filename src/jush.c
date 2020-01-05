@@ -245,7 +245,7 @@ static int parse(char *line, char *args[], struct env *env)
 static void eval(char *line, struct env *env)
 {
 	pid_t pid;
-	char *argv[strlen(line)];
+	char *argv[strlen(line) + 1];
 	char **args;
 
 	memset(argv, 0, sizeof(argv));
