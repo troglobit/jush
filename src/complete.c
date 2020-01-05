@@ -133,15 +133,18 @@ char *complete(char *text, int *match)
 	}
 	done:
 	if (i >= len) {
+		size_t wlen;
+
 		j = i - len + 1;
-		word = malloc(sizeof(char) * j + 2);
+		wlen = sizeof(char) * j + 2;
+		word = malloc(wlen);
 		if (word) {
 			memcpy(word, av[0] + len, j);
 			word[j - 1] = '\0';
 		}
 
 		if (ac == 1)
-			strcat(word, " ");
+			strlcat(word, " ", wlen);
 	}
 
 	for (i = 0; i < ac; i++)

@@ -374,8 +374,8 @@ int main(int argc, char *argv[])
 			err(1, "Not enough memory");
 
 		for (int i = optind; i < argc; i++) {
-			strcat(line, argv[i]);
-			strcat(line, " ");
+			strlcat(line, argv[i], len);
+			strlcat(line, " ", len);
 		}
 
 		eval(line, &env);
