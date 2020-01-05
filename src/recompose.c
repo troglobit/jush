@@ -44,7 +44,7 @@ char *recompose(char *fmt, ...)
 				s = va_arg(ap, char *);
 			str:
 				len += strlen(s);
-				ptr = realloc(buf, len);
+				ptr = realloc(buf, len + 1);
 				if (!ptr) {
 					free(buf);
 					buf = NULL;
@@ -55,15 +55,14 @@ char *recompose(char *fmt, ...)
 				break;
 
 			case 'd':
-				len += sizeof(int);
-				ptr = realloc(buf, len);
+				len += snprintf(tmp, sizeof(tmp), "%d", va_arg(ap, int));
+				ptr = realloc(buf, len + 1);
 				if (!ptr) {
 					free(buf);
 					buf = NULL;
 					goto done;
 				}
 				buf = ptr;
-				snprintf(tmp, sizeof(tmp), "%d", va_arg(ap, int));
 				strlcat(buf, tmp, len);
 				break;
 			}
