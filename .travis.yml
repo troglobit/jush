@@ -34,9 +34,9 @@ addons:
     branch_pattern: dev
 
 install:
-  - wget https://github.com/troglobit/editline/releases/download/1.16.0/editline-1.16.0.tar.xz
-  - tar xf editline-1.16.0.tar.xz
-  - (cd editline-1.16.0 && ./configure --prefix=/tmp && make && make install-strip)
+  - wget https://github.com/troglobit/editline/releases/download/1.17.0/editline-1.17.0.tar.xz
+  - tar xf editline-1.17.0.tar.xz
+  - (cd editline-1.17.0 && ./configure --prefix=/tmp && make && make install-strip)
 
 # Override default build command, we do not have `make test` yet
 script:
