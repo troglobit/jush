@@ -50,9 +50,12 @@ int builtin(char *args[], struct env *env)
 			arg = getenv("HOME");
 		if (arg && compare(arg, "-"))
 			arg = env->prevcwd;
+		if (!arg)
+			goto cderr;
 
 		path = realpath(arg, NULL);
 		if (!path) {
+		cderr:
 			warn("cd");
 			return 1;
 		}
