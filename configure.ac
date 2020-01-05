@@ -7,8 +7,10 @@ AC_CONFIG_FILES([Makefile src/Makefile])
 
 AC_PROG_CC
 AC_PROG_INSTALL
-
 AC_HEADER_STDC
+
+# Check for required packages
+PKG_PROG_PKG_CONFIG
 
 # Check for usually missing API's, which we can replace
 AC_REPLACE_FUNCS([strlcpy strlcat])
