@@ -79,8 +79,11 @@ static char **get_exec(const char *text)
 
 			matches[num++] = strdup(d->d_name);
 			ptr = realloc(matches, (num + 1) * sizeof(char *));
-			if (!ptr)
+			if (!ptr) {
+				if (dir)
+					closedir(dir);
 				return NULL;
+			}
 			matches = ptr;
 		}
 		if (dir)
