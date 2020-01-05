@@ -55,8 +55,10 @@ static void redirect(char *args[])
 	fd = open(arg, flags, mode);
 	args[i] = NULL;
 	close(stdio);
-	if (dup(fd) < 0)
+	if (dup(fd) < 0) {
+		close(fd);
 		err(1, "Failed redirecting %s", stdio == STDIN_FILENO ? "stdin" : "stdout");
+	}
 	close(fd);
 }
 
