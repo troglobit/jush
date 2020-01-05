@@ -70,12 +70,20 @@ static char *env_expand(char *arg, struct env *env)
 	var = getenv(&ptr[1]);
 	if (var) {
 		*ptr++ = 0;
-		return recompose("%a%s", arg, var);
+
+		ptr = recompose("%a%s", arg, var);
+		free(arg);
+
+		return ptr;
 	}
 
 	if (ptr[1] == '?') {
 		*ptr++ = 0;
-		return recompose("%a%d", arg, WEXITSTATUS(env->status));
+
+		ptr = recompose("%a%d", arg, WEXITSTATUS(env->status));
+		free(arg);
+
+		return ptr;
 	}
 
 	if (ptr[1] == '$') {
