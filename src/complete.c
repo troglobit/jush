@@ -50,8 +50,10 @@ static char **get_exec(const char *text)
 		return NULL;
 
 	matches = calloc(num + 1, sizeof(char *));
-	if (!matches)
+	if (!matches) {
+		free(paths);
 		return NULL;
+	}
 
 	path = strtok(paths, ":");
 	while (path) {
@@ -80,6 +82,7 @@ static char **get_exec(const char *text)
 			matches[num++] = strdup(d->d_name);
 			ptr = realloc(matches, (num + 1) * sizeof(char *));
 			if (!ptr) {
+				free(paths);
 				if (dir)
 					closedir(dir);
 				return NULL;
@@ -92,6 +95,7 @@ static char **get_exec(const char *text)
 		path = strtok(NULL, ":");
 	}
 	matches[num] = NULL;
+	free(paths);
 
 	if (!num) {
 		free(matches);
