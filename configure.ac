@@ -1,5 +1,5 @@
 AC_INIT(jush, 0.1, https://github.com/troglobit/jush/issues,, https://github.com/troglobit/jush/)
-AM_INIT_AUTOMAKE([1.11 foreign no-dist-gzip dist-xz])
+AM_INIT_AUTOMAKE([1.11 foreign subdir-objects no-dist-gzip dist-xz])
 
 AC_CONFIG_SRCDIR([src/jush.c])
 AC_CONFIG_HEADER([config.h])
@@ -9,6 +9,10 @@ AC_PROG_CC
 AC_PROG_INSTALL
 
 AC_HEADER_STDC
+
+# Check for usually missing API's, which we can replace
+AC_REPLACE_FUNCS([strlcpy strlcat])
+AC_CONFIG_LIBOBJ_DIR([lib])
 
 # The Debian packaged version is too old
 PKG_CHECK_MODULES([editline], [libeditline >= 1.13.0])
