@@ -40,6 +40,40 @@ static void help(void)
 	puts("   Ctrl-y   Paste previously cut text    Ctrl-c   Abort current command");
 }
 
+static void echo(char *args[], struct env *env)
+{
+	for (int i = 0; args[i]; i++) {
+		fputs(args[i], stdout);
+		fputc(' ', stdout);
+	}
+	fputs("\n", stdout);
+}
+
+static void export(char *args[], struct env *env)
+{
+	struct var *var;
+
+	if (!args[0])
+		return;
+
+	LIST_FOREACH(var, &env->variables, link) {
+		if (strcmp(var->key, args[0]))
+			continue;
+
+		setenv(var->key, var->value, 1);
+		break;
+	}
+}
+
+/* XXX: Limited to only show environment, for now. */
+static void set(char *args[], struct env *env)
+{
+	struct var *var;
+
+	LIST_FOREACH(var, &env->variables, link)
+		printf("%s=%s\n", var->key, var->value);
+}
+
 int builtin(char *args[], struct env *env)
 {
 	if (compare(args[0], "cd")) {
@@ -66,8 +100,12 @@ int builtin(char *args[], struct env *env)
 		if (chdir(path))
 			warn("Failed cd %s", path);
 		free(path);
+	} else if (compare(args[0], "echo")) {
+		echo(&args[1], env);
 	} else if (compare(args[0], "exit")) {
 		env->exit = 1;
+	} else if (compare(args[0], "export")) {
+		export(&args[1], env);
 	} else if (compare(args[0], "help")) {
 		help();
 	} else if (compare(args[0], "jobs")) {
@@ -93,6 +131,8 @@ int builtin(char *args[], struct env *env)
 			while (waitpid(pid, NULL, 0) < 0 && EINTR == errno)
 				kill(pid, SIGINT);
 		}
+	} else if (compare(args[0], "set")) {
+		set(&args[1], env);
 	} else
 		return 0;
 

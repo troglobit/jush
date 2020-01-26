@@ -25,6 +25,7 @@
 #include <fcntl.h>
 #include <limits.h>
 #include <getopt.h>
+#include <queue.h>
 #include <signal.h>
 #include <string.h>
 #include <stdarg.h>
@@ -46,6 +47,13 @@
 #define NELEMS(array) (sizeof(array) / sizeof(array[0]))
 #endif
 
+struct var {
+	LIST_ENTRY(var) link;
+
+	char *key;
+	char *value;
+};
+
 struct env {
 	char prevcwd[PATH_MAX];
 	int pipes;
@@ -55,6 +63,8 @@ struct env {
 	pid_t jobs[MAXJOBS];
 	int lastjob;
 	int exit;
+
+	LIST_HEAD(, var) variables;
 };
 
 static inline int compare(const char *arg1, const char *arg2)
