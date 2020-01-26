@@ -72,7 +72,7 @@ static char *env_expand(char *arg, struct env *env)
 		*ptr++ = 0;
 
 		ptr = recompose("%a%s", arg, var);
-		free(arg);
+//		free(arg);
 
 		return ptr;
 	}
@@ -81,7 +81,7 @@ static char *env_expand(char *arg, struct env *env)
 		*ptr++ = 0;
 
 		ptr = recompose("%a%d", arg, WEXITSTATUS(env->status));
-		free(arg);
+//		free(arg);
 
 		return ptr;
 	}
