@@ -15,6 +15,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <ctype.h>
 #include "jush.h"
 
 /*
@@ -59,6 +60,35 @@ static char *tilde_expand(char *arg)
 	return buf;
 }
 
+static char *stripit(char *arg)
+{
+	int got = 0;
+	char *end;
+
+	while (isspace(*arg))
+		arg++;
+
+	if (*arg == '"') {
+		got++;
+		arg++;
+	}
+
+	end = arg;
+	while (*end != 0)
+		end++;
+	end--;
+
+	while (isspace(*end)) {
+		*end = 0;
+		end--;
+	}
+
+	if (got && *end == '"')
+		*end = 0;
+
+	return arg;
+}
+
 static char *env_set(char *arg, struct env *env)
 {
 	struct var *var;
@@ -68,6 +98,9 @@ static char *env_set(char *arg, struct env *env)
 	if (!value)
 		return arg;
 	*value++ = 0;
+
+	arg   = stripit(arg);
+	value = stripit(value);
 
 	LIST_FOREACH(var, &env->variables, link) {
 		if (!strcmp(var->key, arg)) {
