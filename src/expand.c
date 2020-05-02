@@ -78,6 +78,17 @@ static char *env_expand(char *arg, struct env *env)
 	char *ptr, *var, *rest;
 
 	while ((ptr = strchr(arg, '$'))) {
+	next:
+		/* Handle \$, for literal $ character */
+		if (ptr > arg) {
+			rest = ptr;
+			if (*--rest == '\\') {
+				ptr = strchr(&ptr[1], '$');
+				if (!ptr)
+					break;
+				goto next;
+			}
+		}
 		*ptr++ = 0;
 
 		rest = strchr(ptr, ' '); /* $IFS */
