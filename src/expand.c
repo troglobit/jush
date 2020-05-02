@@ -59,6 +59,55 @@ static char *tilde_expand(char *arg)
 	return buf;
 }
 
+static char *env_set(char *arg, struct env *env)
+{
+	struct var *var;
+	char *value;
+
+	value = strchr(arg, '=');
+	if (!value)
+		return arg;
+	*value++ = 0;
+
+	LIST_FOREACH(var, &env->variables, link) {
+		if (!strcmp(var->key, arg)) {
+			char *tmp;
+
+			tmp = strdup(value);
+			if (!tmp)
+				goto nomem;
+
+			free(var->value);
+			var->value = tmp;
+			goto done;
+		}
+	}
+
+	var = malloc(sizeof(*var));
+	if (!var) {
+	nomem:
+		warn("Out of memory creating new environment variable");
+		goto done;
+	}
+
+	var->key = strdup(arg);
+	if (!var->key) {
+		free(var);
+		goto nomem;
+	}
+
+	var->value = strdup(value);
+	if (!var->value) {
+		free(var->key);
+		free(var);
+		goto nomem;
+	}
+
+	LIST_INSERT_HEAD(&env->variables, var, link);
+done:
+	return NULL;
+}
+
 static char *env_get(char *name, struct env *env)
 {
 	struct var *var;
@@ -117,55 +166,6 @@ static char *env_expand(char *arg, struct env *env)
 	}
 
 	return arg;
-}
-
-static char *env_set(char *arg, struct env *env)
-{
-	struct var *var;
-	char *value;
-
-	value = strchr(arg, '=');
-	if (!value)
-		return arg;
-	*value++ = 0;
-
-	LIST_FOREACH(var, &env->variables, link) {
-		if (!strcmp(var->key, arg)) {
-			char *tmp;
-
-			tmp = strdup(value);
-			if (!tmp)
-				goto nomem;
-
-			free(var->value);
-			var->value = tmp;
-			goto done;
-		}
-	}
-
-	var = malloc(sizeof(*var));
-	if (!var) {
-	nomem:
-		warn("Out of memory creating new environment variable");
-		goto done;
-	}
-
-	var->key = strdup(arg);
-	if (!var->key) {
-		free(var);
-		goto nomem;
-	}
-
-	var->value = strdup(value);
-	if (!var->value) {
-		free(var->key);
-		free(var);
-		goto nomem;
-	}
-
-	LIST_INSERT_HEAD(&env->variables, var, link);
-done:
-	return NULL;
 }
 
 char *expand(char *token, struct env *env)
