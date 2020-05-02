@@ -75,45 +75,34 @@ static char *env_get(char *name, struct env *env)
 
 static char *env_expand(char *arg, struct env *env)
 {
-	char *ptr, *var;
+	char *ptr, *var, *rest;
 
-	ptr = strchr(arg, '$');
-	if (!ptr)
-		return arg;
-
-	var = env_get(&ptr[1], env);
-	if (var) {
+	while ((ptr = strchr(arg, '$'))) {
 		*ptr++ = 0;
 
-		ptr = recompose("%a%s", arg, var);
-//		free(arg);
+		rest = strchr(ptr, ' '); /* $IFS */
+		if (rest)
+			*rest++ = 0;
+		else
+			rest = "";
 
-		return ptr;
-	}
+		var = env_get(ptr, env);
+		if (var)
+			arg = recompose("%a%s%s", arg, var, rest);
+		else if (*ptr == '?')
+			arg = recompose("%a%d%s", arg, WEXITSTATUS(env->status), rest);
+		else if (*ptr == '$')
+			arg = recompose("%a%d%s", arg, getpid(), rest);
+		else if (*ptr == '!') {
+			int id;
 
-	if (ptr[1] == '?') {
-		*ptr++ = 0;
-
-		ptr = recompose("%a%d", arg, WEXITSTATUS(env->status));
-//		free(arg);
-
-		return ptr;
-	}
-
-	if (ptr[1] == '$') {
-		*ptr++ = 0;
-		return recompose("%d", getpid());
-	}
-
-	if (ptr[1] == '!') {
-		int id;
-
-		*ptr++ = 0;
-		id = env->lastjob;
-		if (id < 0 || id >= MAXJOBS)
-			return strdup("");
-
-		return recompose("%d", env->jobs[id]);
+			id = env->lastjob;
+			if (id < 0 || id >= MAXJOBS)
+				arg = recompose("%a%s", arg, rest);
+			else
+				arg = recompose("%a%d%s", arg, env->jobs[id], rest);
+		} else
+			arg = recompose("%a%s", arg, rest);
 	}
 
 	return arg;
