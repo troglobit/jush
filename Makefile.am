@@ -3,16 +3,8 @@ EXTRA_DIST      = README.md LICENSE
 DISTCLEANFILES  = *~ DEADJOE
 SUBDIRS         = src
 
-# lintian --profile debian -i -I --show-overrides ../$PKG.changes
 package:
-	dpkg-buildpackage -uc -us -B
-
-## Generate MD5 checksum file
-MD5 = md5sum
-md5-dist:
-	@for file in $(DIST_ARCHIVES); do	\
-		$(MD5) $$file > ../$$file.md5;	\
-	done
+	@debuild -uc -us -B --lintian-opts --profile debian -i -I
 
 ## Check if tagged in git
 release-hook:
@@ -33,7 +25,10 @@ release-hook:
 	fi
 
 ## Target to run when building a release
-release: release-hook distcheck package md5-dist
+release: release-hook distcheck
+	@for file in $(DIST_ARCHIVES); do	\
+		$(MD5) $$file > ../$$file.md5;	\
+	done
 	@mv $(DIST_ARCHIVES) ../
 	@echo
 	@echo "Resulting release files:"
@@ -41,7 +36,4 @@ release: release-hook distcheck package md5-dist
 	@for file in $(DIST_ARCHIVES); do					\
 		printf "%-32s Distribution tarball\n" $$file;			\
 		printf "%-32s " $$file.md5; cat ../$$file.md5 | cut -f1 -d' ';	\
-	done
-	@for file in `cd ..; ls $(PACKAGE)_$(VERSION)*`; do			\
-		printf "%-32s Debian/Ubuntu package\n" $$file;			\
 	done
