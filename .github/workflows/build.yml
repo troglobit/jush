@@ -23,6 +23,7 @@ jobs:
     env:
       MAKEFLAGS: -j3
       CC: ${{ matrix.compiler }}
+      PKG_CONFIG_PATH: /tmp/lib/pkgconfig
     steps:
       - name: Install dependencies
         run: |
