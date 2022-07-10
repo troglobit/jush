@@ -40,7 +40,7 @@ automake tools.
 Origin & References
 -------------------
 
-jush was written from scratch by [Joachim Nilsson](http://troglobit.com)
+jush was written from scratch by [Joachim Wiberg](http://troglobit.com)
 and is availalbe as Open Source under the ISC license.
 
 The name doesn't really mean anything, but it could be one of:

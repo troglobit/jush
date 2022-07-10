@@ -1,7 +1,7 @@
 Source: jush
 Section: shells
 Priority: optional
-Maintainer: Joachim Nilsson <troglobit@gmail.com>
+Maintainer: Joachim Wiberg <troglobit@gmail.com>
 Homepage: https://github.com/troglobit/jush
 Build-Depends: debhelper (>= 10)
 Vcs-Git: https://github.com/troglobit/jush.git
