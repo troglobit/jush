@@ -23,7 +23,6 @@ jobs:
     env:
       MAKEFLAGS: -j3
       CC: ${{ matrix.compiler }}
-      PKG_CONFIG_PATH: /tmp/lib/pkgconfig
     steps:
       - name: Install dependencies
         run: |
@@ -31,7 +30,7 @@ jobs:
           sudo apt-get -y install tree
           wget https://github.com/troglobit/editline/releases/download/1.17.0/editline-1.17.0.tar.xz
           tar xf editline-1.17.0.tar.xz
-          (cd editline-1.17.0 && ./configure --prefix=/tmp && make && make install-strip)
+          (cd editline-1.17.0 && ./configure && make && sudo make install-strip)
           sudo ldconfig
       - uses: actions/checkout@v2
       - name: Configure
